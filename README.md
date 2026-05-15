@@ -307,17 +307,17 @@ mobile-view.png
 Then add:
 
 ```md
-![Landing Page](./screenshots/landing-page.png)
+![Landing Page](./resumeforge-ai-client/screenshots/landing-page.png)
 
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](./resumeforge-ai-client/screenshots/dashboard.png)
 
-![Resume Builder](./screenshots/resume-builder.png)
+![Resume Builder](./resumeforge-ai-client/screenshots/resume-builder.png)
 
-![Cover Letter](./screenshots/cover-letter.png)
+![Cover Letter](./resumeforge-ai-client/screenshots/cover-letter.png)
 
-![Billing](./screenshots/billing-page.png)
+![Billing](./resumeforge-ai-client/screenshots/billing-page.png)
 
-![Mobile Responsive](./screenshots/mobile-view.png)
+![Mobile Responsive](./resumeforge-ai-client/screenshots/mobile-view.png)
 ```
 
 ---
