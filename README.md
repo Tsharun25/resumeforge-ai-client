@@ -291,34 +291,16 @@ POST /api/ai/generate-cover-letter
 
 ---
 
-# 📸 Suggested Screenshots
+# 📸 Screenshots
 
-Create a `screenshots/` folder and add:
 
-```bash
-landing-page.png
-dashboard.png
-resume-builder.png
-cover-letter.png
-billing-page.png
-mobile-view.png
-```
+![Landing Page](./screenshots/landing-page.png) 
+![Dashboard](./screenshots/dashboard.png) 
+![Resume Builder](./screenshots/resume-builder.png) 
+![Cover Letter](./screenshots/cover-letter.png) 
+![Billing](./screenshots/billing-page.png) 
+![Mobile Responsive](./screenshots/mobile-view.png)
 
-Then add:
-
-```md
-![Landing Page](./resumeforge-ai-client/screenshots/landing-page.png)
-
-![Dashboard](./resumeforge-ai-client/screenshots/dashboard.png)
-
-![Resume Builder](./resumeforge-ai-client/screenshots/resume-builder.png)
-
-![Cover Letter](./resumeforge-ai-client/screenshots/cover-letter.png)
-
-![Billing](./resumeforge-ai-client/screenshots/billing-page.png)
-
-![Mobile Responsive](./resumeforge-ai-client/screenshots/mobile-view.png)
-```
 
 ---
 
