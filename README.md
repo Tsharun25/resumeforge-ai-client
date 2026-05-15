@@ -341,7 +341,7 @@ Recommended:
 
 # 👨‍💻 Author
 
-# Harun Ahmed
+# Harun Ar Rashid
 
 MERN Stack Developer
 
