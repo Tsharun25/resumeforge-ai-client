@@ -121,7 +121,7 @@ export default function Home() {
               </div>
 
               <div className="mt-5 rounded-2xl bg-white p-5 text-slate-900">
-                <h4 className="text-2xl font-black">Harun Ahmed</h4>
+                <h4 className="text-2xl font-black">Harun Ar Rashid</h4>
                 <p className="mt-1 text-sm font-medium text-indigo-600">
                   MERN Stack Developer
                 </p>

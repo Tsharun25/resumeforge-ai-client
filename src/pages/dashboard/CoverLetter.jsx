@@ -10,6 +10,8 @@ export default function CoverLetter() {
     companyName: "Tech Company",
     skills: "React, Node.js, Express, MongoDB, Tailwind CSS",
     jobDescription: "",
+    language: "English",
+    tone: "Professional",
   });
 
   const [coverLetter, setCoverLetter] = useState("");
@@ -22,7 +24,33 @@ export default function CoverLetter() {
     }));
   };
 
+  const validateForm = () => {
+    if (!formData.applicantName.trim()) {
+      toast.error("Applicant name is required");
+      return false;
+    }
+
+    if (!formData.jobTitle.trim()) {
+      toast.error("Job title is required");
+      return false;
+    }
+
+    if (!formData.companyName.trim()) {
+      toast.error("Company name is required");
+      return false;
+    }
+
+    if (!formData.skills.trim()) {
+      toast.error("Skills are required");
+      return false;
+    }
+
+    return true;
+  };
+
   const generateCoverLetter = async () => {
+    if (!validateForm()) return;
+
     try {
       setIsGenerating(true);
 
@@ -31,7 +59,9 @@ export default function CoverLetter() {
       setCoverLetter(data.data.coverLetter);
       toast.success("Cover letter generated!");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to generate cover letter");
+      toast.error(
+        error.response?.data?.message || "Failed to generate cover letter"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -51,7 +81,7 @@ export default function CoverLetter() {
           Cover Letter AI
         </h1>
         <p className="mt-2 text-sm text-slate-500 sm:text-base">
-          Generate polished, job-focused cover letters in seconds.
+          Generate job-focused cover letters in English, Bangla, or mixed style.
         </p>
       </div>
 
@@ -85,6 +115,28 @@ export default function CoverLetter() {
               value={formData.skills}
               onChange={(value) => handleChange("skills", value)}
             />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label="Output Language"
+                value={formData.language}
+                options={["English", "Bangla", "Bangla + English"]}
+                onChange={(value) => handleChange("language", value)}
+              />
+
+              <Select
+                label="Output Tone"
+                value={formData.tone}
+                options={[
+                  "Professional",
+                  "Friendly",
+                  "Corporate",
+                  "Freelance Marketplace",
+                  "Student/Fresher",
+                ]}
+                onChange={(value) => handleChange("tone", value)}
+              />
+            </div>
 
             <div>
               <label className="mb-2 block text-sm font-bold text-slate-700">
@@ -167,6 +219,28 @@ function Input({ label, value, onChange }) {
         onChange={(event) => onChange(event.target.value)}
         className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
       />
+    </div>
+  );
+}
+
+function Select({ label, value, options, onChange }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-bold text-slate-700">
+        {label}
+      </label>
+
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

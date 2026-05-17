@@ -1,18 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
 import DashboardLayout from "./components/dashboard/DashboardLayout";
-
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import MyResumes from "./pages/dashboard/MyResumes";
 import CreateResume from "./pages/dashboard/CreateResume";
 import CoverLetter from "./pages/dashboard/CoverLetter";
 import Billing from "./pages/dashboard/Billing";
-
+import FreelancerToolkit from "./pages/dashboard/FreelancerToolkit";
+import IdeaRadar from "./pages/dashboard/IdeaRadar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminPayments from "./pages/dashboard/AdminPayments";
+import AdminRoute from "./components/AdminRoute";
 
 export default function App() {
   const token = localStorage.getItem("resumeforge_token");
@@ -43,7 +43,18 @@ export default function App() {
         <Route path="resumes" element={<MyResumes />} />
         <Route path="create-resume" element={<CreateResume />} />
         <Route path="cover-letter" element={<CoverLetter />} />
+        <Route path="freelancer-toolkit" element={<FreelancerToolkit />} />
+        <Route path="idea-radar" element={<IdeaRadar />} />
         <Route path="billing" element={<Billing />} />
+
+        <Route
+          path="admin/payments"
+          element={
+            <AdminRoute>
+              <AdminPayments />
+            </AdminRoute>
+          }
+        />
       </Route>
     </Routes>
   );

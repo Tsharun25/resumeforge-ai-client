@@ -5,9 +5,11 @@ import {
   Plus,
   Sparkles,
   Crown,
+  Shield,
+  BriefcaseBusiness,
 } from "lucide-react";
 
-export const navItems = [
+const baseNavItems = [
   {
     label: "Dashboard",
     path: "/dashboard",
@@ -29,13 +31,43 @@ export const navItems = [
     icon: Sparkles,
   },
   {
+    label: "Freelancer Toolkit",
+    path: "/dashboard/freelancer-toolkit",
+    icon: BriefcaseBusiness,
+  },
+  {
+    label: "Idea Radar",
+    path: "/dashboard/idea-radar",
+    icon: Sparkles,
+  },
+  {
     label: "Billing",
     path: "/dashboard/billing",
     icon: Crown,
   },
 ];
 
+const adminNavItems = [
+  {
+    label: "Admin Payments",
+    path: "/dashboard/admin/payments",
+    icon: Shield,
+  },
+];
+
+export const getNavItems = () => {
+  const user = JSON.parse(localStorage.getItem("resumeforge_user") || "null");
+
+  if (user?.role === "admin") {
+    return [...baseNavItems, ...adminNavItems];
+  }
+
+  return baseNavItems;
+};
+
 export default function Sidebar() {
+  const navItems = getNavItems();
+
   return (
     <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-slate-200 bg-white p-6 lg:block">
       <Brand />
@@ -57,8 +89,10 @@ export function Brand() {
       </div>
 
       <div>
-        <h2 className="text-xl font-black text-slate-950">ResumeForge AI</h2>
-        <p className="text-xs font-medium text-slate-500">AI Resume SaaS</p>
+        <h2 className="text-xl font-black text-slate-950">CareerPilot AI</h2>
+        <p className="text-xs font-medium text-slate-500">
+          AI Career Platform
+        </p>
       </div>
     </div>
   );

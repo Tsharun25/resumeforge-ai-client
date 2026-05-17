@@ -2,14 +2,17 @@ import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Brand, navItems, SidebarLink } from "./Sidebar";
+
 import useAuth from "../../hooks/useAuth";
+import { Brand, getNavItems, SidebarLink } from "./Sidebar";
 
 export default function Topbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
   const { user } = useAuth();
+
+  const navItems = getNavItems();
+
   const handleLogout = () => {
     localStorage.removeItem("resumeforge_token");
     localStorage.removeItem("resumeforge_user");
@@ -24,7 +27,7 @@ export default function Topbar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="hidden lg:block">
             <h1 className="text-2xl font-black text-slate-950">
-              Welcome back, {user.fullName} 👋
+              Welcome back, {user?.fullName || "User"} 👋
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
@@ -37,12 +40,12 @@ export default function Topbar() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 sm:block">
-              Free Plan
+            <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold capitalize text-slate-700 sm:block">
+              {user?.plan || "free"} Plan
             </div>
 
             <div className="hidden h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-sm font-black text-white sm:flex">
-              {user.fullName?.charAt(0)?.toUpperCase() || "U"}
+              {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
             </div>
 
             <button
@@ -88,9 +91,13 @@ export default function Topbar() {
 
             <div className="mt-6 rounded-3xl bg-slate-50 p-4">
               <p className="text-sm font-bold text-slate-950">
-                {user.fullName}
+                {user?.fullName || "User"}
               </p>
-              <p className="text-xs font-medium text-slate-500">Free Plan</p>
+
+              <p className="text-xs font-medium capitalize text-slate-500">
+                {user?.role === "admin" ? "Admin" : "User"} •{" "}
+                {user?.plan || "free"} Plan
+              </p>
             </div>
 
             <nav className="mt-8 space-y-2">
