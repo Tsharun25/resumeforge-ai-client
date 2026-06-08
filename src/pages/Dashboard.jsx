@@ -16,7 +16,7 @@ export default function Dashboard() {
             <Sparkles size={22} />
           </div>
           <span className="text-xl font-black text-slate-950">
-            ResumeForge AI
+            CareerPilot AI
           </span>
         </div>
 

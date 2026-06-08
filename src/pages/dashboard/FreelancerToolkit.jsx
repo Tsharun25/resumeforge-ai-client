@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import {
-  BadgeCheck,
   Briefcase,
   Clipboard,
   Copy,
@@ -214,7 +213,9 @@ export default function FreelancerToolkit() {
   };
 
   useEffect(() => {
-    loadHistory();
+    const timer = window.setTimeout(loadHistory, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleChange = (event) => {

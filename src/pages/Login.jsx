@@ -48,9 +48,7 @@ export default function Login() {
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white">
             <Sparkles size={22} />
           </div>
-          <span className="text-2xl font-black text-slate-950">
-            ResumeForge AI
-          </span>
+          <span className="text-2xl font-black text-slate-950">CareerPilot AI</span>
         </Link>
 
         <h1 className="text-center text-3xl font-black text-slate-950">
@@ -58,7 +56,7 @@ export default function Login() {
         </h1>
 
         <p className="mt-2 text-center text-sm text-slate-500">
-          Login to continue building your resume.
+          Login to continue building your career tools.
         </p>
 
         <form onSubmit={handleLogin} className="mt-8 space-y-4">
@@ -86,7 +84,7 @@ export default function Login() {
               value={formData.password}
               onChange={handleChange}
               type="password"
-              placeholder="••••••••"
+              placeholder="Password"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               required
             />

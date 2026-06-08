@@ -27,11 +27,11 @@ export default function Topbar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="hidden lg:block">
             <h1 className="text-2xl font-black text-slate-950">
-              Welcome back, {user?.fullName || "User"} 👋
+              Welcome back, {user?.fullName || "User"}
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Build AI-powered resumes and grow your career.
+              Build AI-powered resumes, creator tools, and income strategies.
             </p>
           </div>
 
@@ -95,7 +95,7 @@ export default function Topbar() {
               </p>
 
               <p className="text-xs font-medium capitalize text-slate-500">
-                {user?.role === "admin" ? "Admin" : "User"} •{" "}
+                {user?.role === "admin" ? "Admin" : "User"} ·{" "}
                 {user?.plan || "free"} Plan
               </p>
             </div>

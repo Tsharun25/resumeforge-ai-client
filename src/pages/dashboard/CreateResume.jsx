@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import html2pdf from "html2pdf.js";
 import toast from "react-hot-toast";
 import {
   Check,
@@ -11,7 +10,6 @@ import {
   Save,
   Sparkles,
   Trash2,
-  Wand2,
 } from "lucide-react";
 
 import api from "../../api/axios";
@@ -85,7 +83,7 @@ export default function CreateResume() {
     skills: "",
   });
 
-  const fetchResume = async () => {
+  const fetchResume = useCallback(async () => {
     try {
       setLoadingResume(true);
 
@@ -110,18 +108,20 @@ export default function CreateResume() {
         experience: resume.experience || [],
         projects: resume.projects || [],
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to load resume");
     } finally {
       setLoadingResume(false);
     }
-  };
+  }, [resumeId]);
 
   useEffect(() => {
-    if (resumeId) {
-      fetchResume();
-    }
-  }, [resumeId]);
+    if (!resumeId) return undefined;
+
+    const timer = window.setTimeout(fetchResume, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [fetchResume, resumeId]);
 
   const updateField = (field, value) => {
     setResumeData((prev) => ({
@@ -162,11 +162,12 @@ export default function CreateResume() {
       setGeneratingAI(true);
 
       const { data } = await api.post("/ai/generate-resume", aiForm);
+      const content = data.data || data.content || {};
 
       setResumeData((prev) => ({
         ...prev,
-        summary: data.content.summary || prev.summary,
-        skills: data.content.skills || prev.skills,
+        summary: content.summary || prev.summary,
+        skills: content.skills || prev.skills,
       }));
 
       toast.success("AI content generated successfully.");
@@ -256,10 +257,11 @@ export default function CreateResume() {
         },
       };
 
+      const { default: html2pdf } = await import("html2pdf.js");
       await html2pdf().set(opt).from(resumeRef.current).save();
 
       toast.success("PDF exported successfully.");
-    } catch (error) {
+    } catch {
       toast.error("PDF export failed.");
     } finally {
       setExportingPDF(false);

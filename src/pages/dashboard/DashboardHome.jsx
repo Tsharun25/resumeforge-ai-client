@@ -51,7 +51,9 @@ export default function DashboardHome() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const timer = window.setTimeout(fetchDashboardData, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   if (isLoading) {

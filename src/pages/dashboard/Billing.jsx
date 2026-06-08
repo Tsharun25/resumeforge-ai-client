@@ -22,7 +22,7 @@ const plans = [
       "1 resume",
       "1 cover letter",
       "Basic PDF export",
-      "Bangla/English demo output",
+      "Bangla and English output",
     ],
   },
   {
@@ -66,6 +66,30 @@ const plans = [
       "Priority support",
     ],
   },
+];
+
+const merchantNumbers = [
+  ["bKash", import.meta.env.VITE_BKASH_NUMBER || "+8801710071135"],
+  ["Nagad", import.meta.env.VITE_NAGAD_NUMBER || "+8801710071135"],
+  ["Rocket", import.meta.env.VITE_ROCKET_NUMBER || "+88017100711358"],
+  ["Tap", import.meta.env.VITE_TAP_NUMBER || "+8801710071135"],
+  ["Upay", import.meta.env.VITE_UPAY_NUMBER || "+8801710071135"],
+];
+
+const bankDetails = [
+  ["Bank Name", import.meta.env.VITE_BANK_NAME || "Add your bank name"],
+  ["Account Name", import.meta.env.VITE_BANK_ACCOUNT_NAME || "Add account name"],
+  [
+    "Account Number",
+    import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "Add account number",
+  ],
+  ["Branch", import.meta.env.VITE_BANK_BRANCH || "Add branch name"],
+  ["Routing Number", import.meta.env.VITE_BANK_ROUTING_NUMBER || "Optional"],
+];
+
+const paymentMethods = [
+  ...merchantNumbers.map(([label]) => label),
+  "Bank Transfer",
 ];
 
 export default function Billing() {
@@ -117,8 +141,12 @@ export default function Billing() {
   };
 
   useEffect(() => {
-    fetchCurrentUser();
-    fetchPaymentRequests();
+    const timer = window.setTimeout(() => {
+      fetchCurrentUser();
+      fetchPaymentRequests();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleChange = (field, value) => {
@@ -142,7 +170,7 @@ export default function Billing() {
     }
 
     if (!formData.senderNumber.trim()) {
-      toast.error("Sender number is required");
+      toast.error("Sender number or account is required");
       return;
     }
 
@@ -194,8 +222,8 @@ export default function Billing() {
         </h1>
 
         <p className="mt-3 max-w-3xl text-sm leading-7 text-indigo-100 sm:text-base">
-          Pay manually through bKash, Nagad, or Rocket and submit transaction
-          details for admin approval.
+          Pay manually through bKash, Nagad, Rocket, Tap, Upay, or bank
+          transfer and submit transaction details for admin approval.
         </p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -262,7 +290,7 @@ export default function Billing() {
 
               <div className="mt-3 flex items-end gap-1">
                 <span className="text-4xl font-black text-slate-950">
-                  ৳{plan.price}
+                  BDT {plan.price}
                 </span>
                 {plan.price > 0 && (
                   <span className="mb-1 text-sm font-bold text-slate-500">
@@ -307,7 +335,7 @@ export default function Billing() {
               <p className="mt-1 text-sm text-slate-500">
                 Selected plan:{" "}
                 <span className="font-black text-indigo-600">
-                  {selectedPlanData?.name} — ৳{selectedPlanData?.price}
+                  {selectedPlanData?.name} - BDT {selectedPlanData?.price}
                 </span>
               </p>
             </div>
@@ -319,14 +347,30 @@ export default function Billing() {
             </h3>
 
             <div className="mt-4 grid gap-3 text-sm">
-              <PaymentInfo label="bKash" value="01XXXXXXXXX" />
-              <PaymentInfo label="Nagad" value="01XXXXXXXXX" />
-              <PaymentInfo label="Rocket" value="01XXXXXXXXX" />
+              {merchantNumbers.map(([label, value]) => (
+                <PaymentInfo key={label} label={label} value={value} />
+              ))}
             </div>
 
             <p className="mt-4 text-xs font-semibold leading-6 text-slate-500">
-              Replace these demo numbers with your real payment numbers before
-              production deployment.
+              All mobile payment methods are linked to the same verified
+              number for this account.
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-3xl bg-slate-50 p-5">
+            <h3 className="font-black text-slate-950">
+              Bank transfer details
+            </h3>
+
+            <div className="mt-4 grid gap-3 text-sm">
+              {bankDetails.map(([label, value]) => (
+                <PaymentInfo key={label} label={label} value={value} />
+              ))}
+            </div>
+
+            <p className="mt-4 text-xs font-semibold leading-6 text-slate-500">
+              Use the account details above for bank transfer verification.
             </p>
           </div>
 
@@ -351,15 +395,17 @@ export default function Billing() {
                 }
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               >
-                <option value="bKash">bKash</option>
-                <option value="Nagad">Nagad</option>
-                <option value="Rocket">Rocket</option>
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
               </select>
             </div>
 
             <Input
-              label="Sender Number"
-              placeholder="01XXXXXXXXX"
+              label="Sender Number / Account"
+              placeholder="01XXXXXXXXX or bank account number"
               value={formData.senderNumber}
               onChange={(value) => handleChange("senderNumber", value)}
             />

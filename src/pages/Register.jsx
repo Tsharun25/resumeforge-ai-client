@@ -49,9 +49,7 @@ export default function Register() {
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white">
             <Sparkles size={22} />
           </div>
-          <span className="text-2xl font-black text-slate-950">
-            ResumeForge AI
-          </span>
+          <span className="text-2xl font-black text-slate-950">CareerPilot AI</span>
         </Link>
 
         <h1 className="text-center text-3xl font-black text-slate-950">
@@ -59,7 +57,7 @@ export default function Register() {
         </h1>
 
         <p className="mt-2 text-center text-sm text-slate-500">
-          Start building AI-powered resumes today.
+          Start building your AI-powered career system today.
         </p>
 
         <form onSubmit={handleRegister} className="mt-8 space-y-4">

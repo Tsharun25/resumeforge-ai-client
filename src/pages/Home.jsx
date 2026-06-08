@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import {
-  Sparkles,
-  FileText,
+  ArrowRight,
   Download,
+  FileText,
   LayoutTemplate,
   ShieldCheck,
-  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 export default function Home() {
@@ -13,22 +13,22 @@ export default function Home() {
     {
       icon: Sparkles,
       title: "AI Resume Generator",
-      desc: "Job title, skills, and experience দিয়ে instantly professional resume content generate করো.",
+      desc: "Generate professional resume content from your job title, skills, and experience.",
     },
     {
       icon: LayoutTemplate,
       title: "Modern Templates",
-      desc: "Clean, ATS-friendly, recruiter-focused resume templates ব্যবহার করো.",
+      desc: "Use clean, ATS-friendly, recruiter-focused resume templates.",
     },
     {
       icon: Download,
       title: "PDF Export",
-      desc: "Final resume এক click-এ polished PDF হিসেবে download করো.",
+      desc: "Download your final resume as a polished PDF in one click.",
     },
     {
       icon: FileText,
       title: "Cover Letter Generator",
-      desc: "Job description অনুযায়ী AI-powered cover letter তৈরি করো.",
+      desc: "Create AI-powered cover letters matched to each job description.",
     },
   ];
 
@@ -40,7 +40,7 @@ export default function Home() {
             <Sparkles size={22} />
           </div>
           <span className="text-xl font-black tracking-tight text-slate-950">
-            ResumeForge AI
+            CareerPilot AI
           </span>
         </Link>
 
@@ -64,11 +64,11 @@ export default function Home() {
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm">
             <ShieldCheck size={17} />
-            Build ATS-friendly resumes in minutes
+            Build career tools that actually help you earn
           </div>
 
           <h1 className="max-w-3xl text-5xl font-black leading-tight tracking-tight text-slate-950 md:text-6xl">
-            Create job-winning resumes with{" "}
+            Build your next career move with{" "}
             <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
               AI power
             </span>
@@ -76,9 +76,9 @@ export default function Home() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            ResumeForge AI helps developers, designers, marketers, and students
-            create polished resumes, cover letters, and PDF exports from one
-            modern SaaS dashboard.
+            CareerPilot AI helps students, job seekers, freelancers, and
+            creators build resumes, cover letters, career roadmaps, and content
+            income strategies from one modern dashboard.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
@@ -93,37 +93,28 @@ export default function Home() {
               to="/dashboard"
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-4 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200"
             >
-              View Demo Dashboard
+              Open Dashboard
             </Link>
-          </div>
-
-          <div className="mt-10 grid max-w-xl grid-cols-3 gap-4">
-            <Stat number="10k+" label="Resumes" />
-            <Stat number="4.9/5" label="User Rating" />
-            <Stat number="ATS" label="Friendly" />
           </div>
         </div>
 
         <div className="relative">
-          <div className="absolute -left-6 -top-6 h-32 w-32 rounded-full bg-indigo-200 blur-3xl" />
-          <div className="absolute -bottom-6 -right-6 h-32 w-32 rounded-full bg-violet-200 blur-3xl" />
-
           <div className="relative rounded-[2rem] border border-slate-200 bg-white p-5 shadow-2xl shadow-slate-200">
             <div className="rounded-[1.5rem] bg-slate-950 p-5 text-white">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                  <p className="text-sm text-slate-400">Resume Preview</p>
-                  <h3 className="text-xl font-bold">Frontend Developer</h3>
+                  <p className="text-sm text-slate-400">Career Preview</p>
+                  <h3 className="text-xl font-bold">AI-Powered Dashboard</h3>
                 </div>
                 <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                  AI Enhanced
+                  CareerPilot
                 </span>
               </div>
 
               <div className="mt-5 rounded-2xl bg-white p-5 text-slate-900">
                 <h4 className="text-2xl font-black">Harun Ar Rashid</h4>
                 <p className="mt-1 text-sm font-medium text-indigo-600">
-                  MERN Stack Developer
+                  Resume, Content, and Income Strategy
                 </p>
 
                 <div className="mt-5 space-y-4">
@@ -141,10 +132,10 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-6 pb-24">
         <div className="mb-10 max-w-2xl">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-indigo-600">
-            Features
+            Product
           </p>
           <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">
-            Everything needed for a modern resume SaaS.
+            Everything needed for a career and income platform.
           </h2>
         </div>
 
@@ -171,16 +162,27 @@ export default function Home() {
           })}
         </div>
       </section>
-    </main>
-  );
-}
 
-function Stat({ number, label }) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-2xl font-black text-slate-950">{number}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-500">{label}</p>
-    </div>
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-6 text-sm font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>CareerPilot AI - AI career and income platform.</p>
+          <div className="flex flex-wrap gap-4">
+            <Link to="/legal/privacy" className="hover:text-indigo-600">
+              Privacy
+            </Link>
+            <Link to="/legal/terms" className="hover:text-indigo-600">
+              Terms
+            </Link>
+            <Link to="/legal/refund" className="hover:text-indigo-600">
+              Refund
+            </Link>
+            <Link to="/legal/support" className="hover:text-indigo-600">
+              Support
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </main>
   );
 }
 

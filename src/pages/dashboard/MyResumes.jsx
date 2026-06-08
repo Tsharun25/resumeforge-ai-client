@@ -46,7 +46,9 @@ export default function MyResumes() {
   };
 
   useEffect(() => {
-    fetchResumes();
+    const timer = window.setTimeout(fetchResumes, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   if (isLoading) {

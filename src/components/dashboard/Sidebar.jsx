@@ -1,12 +1,14 @@
+/* eslint-disable react-refresh/only-export-components */
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard,
-  FileText,
-  Plus,
-  Sparkles,
-  Crown,
-  Shield,
   BriefcaseBusiness,
+  Crown,
+  FileText,
+  LayoutDashboard,
+  Plus,
+  Shield,
+  Sparkles,
+  TrendingUp,
 } from "lucide-react";
 
 const baseNavItems = [
@@ -41,6 +43,11 @@ const baseNavItems = [
     icon: Sparkles,
   },
   {
+    label: "Trending Advice",
+    path: "/dashboard/trending-advice",
+    icon: TrendingUp,
+  },
+  {
     label: "Billing",
     path: "/dashboard/billing",
     icon: Crown,
@@ -67,16 +74,33 @@ export const getNavItems = () => {
 
 export default function Sidebar() {
   const navItems = getNavItems();
+  const user = JSON.parse(localStorage.getItem("resumeforge_user") || "null");
 
   return (
-    <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-slate-200 bg-white p-6 lg:block">
+    <aside className="hidden min-h-screen w-72 shrink-0 border-r border-slate-200 bg-white px-5 py-6 lg:flex lg:flex-col">
       <Brand />
 
-      <nav className="mt-10 space-y-2">
+      <nav className="mt-8 flex-1 space-y-2">
         {navItems.map((item) => (
-          <SidebarLink key={item.label} item={item} />
+          <SidebarLink key={item.path} item={item} />
         ))}
       </nav>
+
+      <div className="rounded-3xl bg-indigo-50 p-5">
+        <p className="text-sm font-bold text-slate-500">AI Credits</p>
+        <p className="mt-1 text-2xl font-black text-slate-950">
+          {user?.aiCredits ?? 0}
+        </p>
+        <p className="text-sm font-semibold text-slate-500">credits left</p>
+
+        <NavLink
+          to="/dashboard/billing"
+          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-black text-white hover:bg-indigo-700"
+        >
+          <Crown size={17} />
+          Upgrade Plan
+        </NavLink>
+      </div>
     </aside>
   );
 }
@@ -84,13 +108,15 @@ export default function Sidebar() {
 export function Brand() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-100">
-        <Sparkles size={22} />
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <Sparkles size={28} />
       </div>
 
       <div>
-        <h2 className="text-xl font-black text-slate-950">CareerPilot AI</h2>
-        <p className="text-xs font-medium text-slate-500">
+        <h2 className="text-2xl font-black tracking-tight text-slate-950">
+          CareerPilot AI
+        </h2>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
           AI Career Platform
         </p>
       </div>
@@ -107,14 +133,14 @@ export function SidebarLink({ item, onClick }) {
       end={item.path === "/dashboard"}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
+        `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black transition ${
           isActive
             ? "bg-indigo-50 text-indigo-700"
             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
         }`
       }
     >
-      <Icon size={20} />
+      <Icon size={19} />
       {item.label}
     </NavLink>
   );

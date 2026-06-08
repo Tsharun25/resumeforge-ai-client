@@ -73,7 +73,9 @@ export default function AdminPayments() {
   };
 
   useEffect(() => {
-    fetchRequests();
+    const timer = window.setTimeout(fetchRequests, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const pendingRequests = requests.filter(
@@ -113,8 +115,8 @@ export default function AdminPayments() {
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-7 text-indigo-100 sm:text-base">
-          Review manual bKash/Nagad/Rocket payment requests and activate user
-          plans after verification.
+          Review manual bKash, Nagad, Rocket, Tap, Upay, and bank transfer
+          payment requests and activate user plans after verification.
         </p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-4">
