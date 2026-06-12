@@ -58,7 +58,7 @@ export default function CreateResume() {
   const resumeRef = useRef(null);
 
   const currentUser = JSON.parse(
-    localStorage.getItem("resumeforge_user") || "null"
+    localStorage.getItem("resumeforge_user") || "null",
   );
 
   const userPlan = currentUser?.plan || "free";
@@ -140,7 +140,7 @@ export default function CreateResume() {
   const handleTemplateSelect = (template) => {
     if (template.premium && !canUsePremiumTemplates) {
       toast.error(
-        "Premium templates are available for Starter, Pro, and Agency plans."
+        "Premium templates are available for Starter, Pro, and Agency plans.",
       );
       return;
     }
@@ -150,18 +150,17 @@ export default function CreateResume() {
 
   const generateAIContent = async () => {
     try {
-      if (
-        !aiForm.targetRole ||
-        !aiForm.experienceLevel ||
-        !aiForm.skills
-      ) {
+      if (!aiForm.targetRole || !aiForm.experienceLevel || !aiForm.skills) {
         toast.error("Please complete AI generation form.");
         return;
       }
 
       setGeneratingAI(true);
 
-      const { data } = await api.post("/ai/generate-resume", aiForm);
+      const { data } = await api.post("/ai/generate-resume", {
+        ...aiForm,
+        jobTitle: aiForm.targetRole,
+      });
       const content = data.data || data.content || {};
 
       setResumeData((prev) => ({
@@ -173,8 +172,7 @@ export default function CreateResume() {
       toast.success("AI content generated successfully.");
     } catch (error) {
       toast.error(
-        error.response?.data?.message ||
-          "Failed to generate AI content."
+        error.response?.data?.message || "Failed to generate AI content.",
       );
     } finally {
       setGeneratingAI(false);
@@ -184,14 +182,11 @@ export default function CreateResume() {
   const saveResume = async () => {
     try {
       if (
-        templates.find(
-          (template) => template.id === selectedTemplate
-        )?.premium &&
+        templates.find((template) => template.id === selectedTemplate)
+          ?.premium &&
         !canUsePremiumTemplates
       ) {
-        toast.error(
-          "Upgrade your plan to save premium templates."
-        );
+        toast.error("Upgrade your plan to save premium templates.");
         return;
       }
 
@@ -212,10 +207,7 @@ export default function CreateResume() {
         toast.success("Resume saved successfully.");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to save resume."
-      );
+      toast.error(error.response?.data?.message || "Failed to save resume.");
     } finally {
       setSavingResume(false);
     }
@@ -224,14 +216,11 @@ export default function CreateResume() {
   const exportPDF = async () => {
     try {
       if (
-        templates.find(
-          (template) => template.id === selectedTemplate
-        )?.premium &&
+        templates.find((template) => template.id === selectedTemplate)
+          ?.premium &&
         !canUsePremiumTemplates
       ) {
-        toast.error(
-          "Upgrade your plan to export premium templates."
-        );
+        toast.error("Upgrade your plan to export premium templates.");
         return;
       }
 
@@ -300,10 +289,7 @@ export default function CreateResume() {
   if (loadingResume) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2
-          className="animate-spin text-indigo-600"
-          size={40}
-        />
+        <Loader2 className="animate-spin text-indigo-600" size={40} />
       </div>
     );
   }
@@ -329,14 +315,10 @@ export default function CreateResume() {
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700"
             >
               {generatingAI ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
                 <Sparkles size={18} />
               )}
-
               Generate with AI
             </button>
 
@@ -346,14 +328,10 @@ export default function CreateResume() {
               className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-black text-white"
             >
               {savingResume ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
                 <Save size={18} />
               )}
-
               Save Resume
             </button>
 
@@ -363,14 +341,10 @@ export default function CreateResume() {
               className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white"
             >
               {exportingPDF ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
                 <Download size={18} />
               )}
-
               Export PDF
             </button>
           </div>
@@ -378,25 +352,19 @@ export default function CreateResume() {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-2xl font-black text-slate-950">
-          Choose Template
-        </h2>
+        <h2 className="text-2xl font-black text-slate-950">Choose Template</h2>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {templates.map((template) => {
-            const isLocked =
-              template.premium && !canUsePremiumTemplates;
+            const isLocked = template.premium && !canUsePremiumTemplates;
 
-            const isSelected =
-              selectedTemplate === template.id;
+            const isSelected = selectedTemplate === template.id;
 
             return (
               <button
                 key={template.id}
                 type="button"
-                onClick={() =>
-                  handleTemplateSelect(template)
-                }
+                onClick={() => handleTemplateSelect(template)}
                 className={`relative rounded-3xl border p-5 text-left transition ${
                   isSelected
                     ? "border-indigo-600 bg-indigo-50 ring-4 ring-indigo-100"
@@ -450,66 +418,50 @@ export default function CreateResume() {
               <Input
                 label="Full Name"
                 value={resumeData.fullName}
-                onChange={(e) =>
-                  updateField("fullName", e.target.value)
-                }
+                onChange={(e) => updateField("fullName", e.target.value)}
               />
 
               <Input
                 label="Professional Title"
                 value={resumeData.title}
-                onChange={(e) =>
-                  updateField("title", e.target.value)
-                }
+                onChange={(e) => updateField("title", e.target.value)}
               />
 
               <Input
                 label="Email"
                 value={resumeData.email}
-                onChange={(e) =>
-                  updateField("email", e.target.value)
-                }
+                onChange={(e) => updateField("email", e.target.value)}
               />
 
               <Input
                 label="Phone"
                 value={resumeData.phone}
-                onChange={(e) =>
-                  updateField("phone", e.target.value)
-                }
+                onChange={(e) => updateField("phone", e.target.value)}
               />
 
               <Input
                 label="Location"
                 value={resumeData.location}
-                onChange={(e) =>
-                  updateField("location", e.target.value)
-                }
+                onChange={(e) => updateField("location", e.target.value)}
               />
 
               <Input
                 label="Portfolio"
                 value={resumeData.portfolio}
-                onChange={(e) =>
-                  updateField("portfolio", e.target.value)
-                }
+                onChange={(e) => updateField("portfolio", e.target.value)}
               />
 
               <TextArea
                 label="Professional Summary"
                 value={resumeData.summary}
-                onChange={(e) =>
-                  updateField("summary", e.target.value)
-                }
+                onChange={(e) => updateField("summary", e.target.value)}
               />
             </div>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black text-slate-950">
-                Skills
-              </h2>
+              <h2 className="text-2xl font-black text-slate-950">Skills</h2>
 
               <button
                 type="button"
@@ -523,16 +475,11 @@ export default function CreateResume() {
 
             <div className="mt-5 space-y-3">
               {resumeData.skills.map((skill, index) => (
-                <div
-                  key={index}
-                  className="flex gap-3"
-                >
+                <div key={index} className="flex gap-3">
                   <input
                     type="text"
                     value={skill}
-                    onChange={(e) =>
-                      updateSkill(index, e.target.value)
-                    }
+                    onChange={(e) => updateSkill(index, e.target.value)}
                     placeholder="React, Node.js, MongoDB..."
                     className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-indigo-500"
                   />
@@ -550,39 +497,27 @@ export default function CreateResume() {
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-950">
-              AI Assistant
-            </h2>
+            <h2 className="text-2xl font-black text-slate-950">AI Assistant</h2>
 
             <div className="mt-5 grid gap-4">
               <Input
                 label="Target Role"
                 value={aiForm.targetRole}
-                onChange={(e) =>
-                  updateAiForm(
-                    "targetRole",
-                    e.target.value
-                  )
-                }
+                onChange={(e) => updateAiForm("targetRole", e.target.value)}
               />
 
               <Input
                 label="Experience Level"
                 value={aiForm.experienceLevel}
                 onChange={(e) =>
-                  updateAiForm(
-                    "experienceLevel",
-                    e.target.value
-                  )
+                  updateAiForm("experienceLevel", e.target.value)
                 }
               />
 
               <TextArea
                 label="Skills"
                 value={aiForm.skills}
-                onChange={(e) =>
-                  updateAiForm("skills", e.target.value)
-                }
+                onChange={(e) => updateAiForm("skills", e.target.value)}
               />
             </div>
           </div>
@@ -590,22 +525,16 @@ export default function CreateResume() {
 
         <div>
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-950">
-              Live Preview
-            </h2>
+            <h2 className="text-2xl font-black text-slate-950">Live Preview</h2>
 
             <div className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-              <div
-                ref={resumeRef}
-                className="bg-white p-8 text-slate-900"
-              >
+              <div ref={resumeRef} className="bg-white p-8 text-slate-900">
                 <h1 className="text-4xl font-black">
                   {resumeData.fullName || "Your Name"}
                 </h1>
 
                 <p className="mt-2 text-lg font-bold text-indigo-600">
-                  {resumeData.title ||
-                    "Professional Title"}
+                  {resumeData.title || "Professional Title"}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
@@ -633,20 +562,16 @@ export default function CreateResume() {
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     {resumeData.skills.length > 0 ? (
-                      resumeData.skills.map(
-                        (skill, index) => (
-                          <span
-                            key={index}
-                            className="rounded-full bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700"
-                          >
-                            {skill}
-                          </span>
-                        )
-                      )
+                      resumeData.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="rounded-full bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700"
+                        >
+                          {skill}
+                        </span>
+                      ))
                     ) : (
-                      <p className="text-slate-500">
-                        Skills will appear here.
-                      </p>
+                      <p className="text-slate-500">Skills will appear here.</p>
                     )}
                   </div>
                 </section>
