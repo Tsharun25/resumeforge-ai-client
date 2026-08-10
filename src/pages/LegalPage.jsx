@@ -18,7 +18,7 @@ const pages = {
       },
       {
         title: "AI Content",
-        body: "Inputs submitted to AI tools may be processed by AI providers when generation is enabled. Avoid sharing unnecessary sensitive data.",
+        body: "Inputs submitted to AI tools are processed by the configured third-party AI provider under that provider's terms. Free-tier providers may use submitted content to improve their products. Do not submit passwords, national ID numbers, financial credentials, medical records, or other unnecessary sensitive data.",
       },
       {
         title: "Data Security",

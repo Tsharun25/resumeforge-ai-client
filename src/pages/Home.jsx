@@ -1,34 +1,68 @@
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Download,
+  BriefcaseBusiness,
+  Check,
   FileText,
   LayoutTemplate,
   ShieldCheck,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 
 export default function Home() {
   const features = [
     {
       icon: Sparkles,
-      title: "AI Resume Generator",
-      desc: "Generate professional resume content from your job title, skills, and experience.",
+      title: "Job-specific Resume",
+      desc: "Tailor a truthful ATS-friendly resume to a real job description.",
     },
     {
-      icon: LayoutTemplate,
-      title: "Modern Templates",
-      desc: "Use clean, ATS-friendly, recruiter-focused resume templates.",
-    },
-    {
-      icon: Download,
-      title: "PDF Export",
-      desc: "Download your final resume as a polished PDF in one click.",
+      icon: ShieldCheck,
+      title: "Job Match Report",
+      desc: "See matched keywords, missing evidence, strengths, and next improvements.",
     },
     {
       icon: FileText,
-      title: "Cover Letter Generator",
-      desc: "Create AI-powered cover letters matched to each job description.",
+      title: "Application Pack",
+      desc: "Create a tailored cover letter and recruiter message from verified facts.",
+    },
+    {
+      icon: LayoutTemplate,
+      title: "Complete Career Profile",
+      desc: "Keep experience, projects, education, skills, and documents in one place.",
+    },
+    {
+      icon: BriefcaseBusiness,
+      title: "Freelancer Toolkit",
+      desc: "Turn verified skills into focused Upwork profiles, Fiverr gigs, and client proposals.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Live Trend Radar",
+      desc: "Create timely content plans from current Google, YouTube, web, and news evidence.",
+    },
+  ];
+
+  const pricing = [
+    {
+      name: "Free",
+      price: "৳0",
+      description: "Test the complete workflow before paying.",
+      features: ["10 AI credits", "1 saved resume", "Classic ATS template"],
+    },
+    {
+      name: "Starter",
+      price: "৳199",
+      description: "For students and first-time job seekers.",
+      features: ["20 AI credits", "5 saved resumes", "All resume templates"],
+    },
+    {
+      name: "Pro",
+      price: "৳499",
+      description: "For active job seekers, freelancers, and creators.",
+      features: ["80 AI credits", "30 saved resumes", "All career and income tools"],
+      popular: true,
     },
   ];
 
@@ -64,21 +98,21 @@ export default function Home() {
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm">
             <ShieldCheck size={17} />
-            Build career tools that actually help you earn
+            Built for Bangladesh-focused job applications
           </div>
 
           <h1 className="max-w-3xl text-5xl font-black leading-tight tracking-tight text-slate-950 md:text-6xl">
-            Build your next career move with{" "}
+            Turn your real experience into a{" "}
             <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              AI power
+              stronger job application
             </span>
             .
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            CareerPilot AI helps students, job seekers, freelancers, and
-            creators build resumes, cover letters, career roadmaps, and content
-            income strategies from one modern dashboard.
+            Paste a job description, find the evidence gaps, and create a
+            truthful ATS-friendly resume, cover letter, and recruiter message
+            from one guided workspace.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
@@ -135,11 +169,11 @@ export default function Home() {
             Product
           </p>
           <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">
-            Everything needed for a career and income platform.
+            More than generic AI writing—an application workflow.
           </h2>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => {
             const Icon = feature.icon;
 
@@ -160,6 +194,70 @@ export default function Home() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-indigo-600">
+              Simple pricing
+            </p>
+            <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950">
+              Start free, upgrade when the workflow proves its value.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600">
+              Every AI action shows its credit cost before you run it. Failed AI
+              generations are automatically refunded.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {pricing.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative rounded-[2rem] border p-6 ${
+                  plan.popular
+                    ? "border-indigo-500 bg-indigo-50 shadow-xl shadow-indigo-100"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute right-5 top-5 rounded-full bg-indigo-600 px-3 py-1 text-xs font-black text-white">
+                    Best value
+                  </span>
+                )}
+                <h3 className="text-xl font-black text-slate-950">{plan.name}</h3>
+                <p className="mt-3 text-4xl font-black text-slate-950">
+                  {plan.price}
+                  {plan.name !== "Free" && (
+                    <span className="text-sm font-bold text-slate-500"> / month</span>
+                  )}
+                </p>
+                <p className="mt-3 min-h-12 text-sm leading-6 text-slate-600">
+                  {plan.description}
+                </p>
+                <div className="mt-5 space-y-3">
+                  {plan.features.map((feature) => (
+                    <p key={feature} className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                      <Check size={16} className="text-emerald-600" />
+                      {feature}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/register"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-8 py-4 text-sm font-black text-white shadow-xl shadow-indigo-200 transition hover:-translate-y-1 hover:bg-indigo-700"
+            >
+              Create Free Account
+              <ArrowRight size={18} />
+            </Link>
+          </div>
         </div>
       </section>
 

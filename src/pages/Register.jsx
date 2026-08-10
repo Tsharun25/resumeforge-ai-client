@@ -32,6 +32,7 @@ export default function Register() {
 
       localStorage.setItem("resumeforge_token", data.token);
       localStorage.setItem("resumeforge_user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
 
       toast.success("Account created successfully!");
       navigate("/dashboard");
@@ -100,10 +101,10 @@ export default function Register() {
               value={formData.password}
               onChange={handleChange}
               type="password"
-              placeholder="Minimum 6 characters"
+              placeholder="Minimum 8 characters"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
 
@@ -115,6 +116,18 @@ export default function Register() {
             {isLoading ? "Creating..." : "Create Account"}
           </button>
         </form>
+
+        <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+          By creating an account, you agree to the{" "}
+          <Link to="/legal/terms" className="font-bold text-indigo-600">
+            Terms
+          </Link>{" "}
+          and acknowledge the{" "}
+          <Link to="/legal/privacy" className="font-bold text-indigo-600">
+            Privacy Policy
+          </Link>
+          .
+        </p>
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Already have an account?{" "}

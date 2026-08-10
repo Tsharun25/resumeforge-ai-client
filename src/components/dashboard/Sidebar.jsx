@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -23,7 +24,7 @@ const baseNavItems = [
     icon: FileText,
   },
   {
-    label: "Create Resume",
+    label: "Job Application Studio",
     path: "/dashboard/create-resume",
     icon: Plus,
   },
@@ -38,12 +39,12 @@ const baseNavItems = [
     icon: BriefcaseBusiness,
   },
   {
-    label: "Idea Radar",
+    label: "Opportunity Planner",
     path: "/dashboard/idea-radar",
     icon: Sparkles,
   },
   {
-    label: "Trending Advice",
+    label: "Trend Radar",
     path: "/dashboard/trending-advice",
     icon: TrendingUp,
   },
@@ -62,8 +63,10 @@ const adminNavItems = [
   },
 ];
 
-export const getNavItems = () => {
-  const user = JSON.parse(localStorage.getItem("resumeforge_user") || "null");
+export const getNavItems = (currentUser) => {
+  const user =
+    currentUser ??
+    JSON.parse(localStorage.getItem("resumeforge_user") || "null");
 
   if (user?.role === "admin") {
     return [...baseNavItems, ...adminNavItems];
@@ -73,8 +76,26 @@ export const getNavItems = () => {
 };
 
 export default function Sidebar() {
-  const navItems = getNavItems();
-  const user = JSON.parse(localStorage.getItem("resumeforge_user") || "null");
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("resumeforge_user") || "null"),
+  );
+  const navItems = getNavItems(user);
+
+  useEffect(() => {
+    const syncUser = () => {
+      setUser(
+        JSON.parse(localStorage.getItem("resumeforge_user") || "null"),
+      );
+    };
+
+    window.addEventListener("careerpilot-user-updated", syncUser);
+    window.addEventListener("storage", syncUser);
+
+    return () => {
+      window.removeEventListener("careerpilot-user-updated", syncUser);
+      window.removeEventListener("storage", syncUser);
+    };
+  }, []);
 
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-slate-200 bg-white px-5 py-6 lg:flex lg:flex-col">

@@ -2,12 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
+  AlertTriangle,
+  BriefcaseBusiness,
   Check,
   Download,
+  FolderKanban,
+  GraduationCap,
   Loader2,
   Lock,
   Plus,
   Save,
+  ShieldCheck,
   Sparkles,
   Trash2,
 } from "lucide-react";
@@ -81,7 +86,13 @@ export default function CreateResume() {
     targetRole: "",
     experienceLevel: "",
     skills: "",
+    achievements: "",
+    jobDescription: "",
+    language: "English",
+    tone: "Professional",
   });
+
+  const [aiResult, setAiResult] = useState(null);
 
   const fetchResume = useCallback(async () => {
     try {
@@ -160,16 +171,58 @@ export default function CreateResume() {
       const { data } = await api.post("/ai/generate-resume", {
         ...aiForm,
         jobTitle: aiForm.targetRole,
+        resumeData,
       });
       const content = data.data || data.content || {};
 
       setResumeData((prev) => ({
         ...prev,
+        title: prev.title || aiForm.targetRole,
         summary: content.summary || prev.summary,
-        skills: content.skills || prev.skills,
+        skills:
+          content.optimizedSkills?.length > 0
+            ? content.optimizedSkills
+            : prev.skills,
+        experience:
+          content.experienceDescription && prev.experience.length > 0
+            ? prev.experience.map((item, index) =>
+                index === 0
+                  ? { ...item, description: content.experienceDescription }
+                  : item,
+              )
+            : prev.experience,
+        projects:
+          content.projectDescription && prev.projects.length > 0
+            ? prev.projects.map((item, index) =>
+                index === 0
+                  ? { ...item, description: content.projectDescription }
+                  : item,
+              )
+            : prev.projects,
       }));
 
-      toast.success("AI content generated successfully.");
+      setAiResult({
+        ...content,
+        source: data.source,
+        remainingCredits: data.remainingCredits,
+      });
+
+      const storedUser = JSON.parse(
+        localStorage.getItem("resumeforge_user") || "null",
+      );
+
+      if (storedUser && Number.isFinite(data.remainingCredits)) {
+        localStorage.setItem(
+          "resumeforge_user",
+          JSON.stringify({
+            ...storedUser,
+            aiCredits: data.remainingCredits,
+          }),
+        );
+        window.dispatchEvent(new Event("careerpilot-user-updated"));
+      }
+
+      toast.success("Job-specific resume analysis completed.");
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to generate AI content.",
@@ -286,6 +339,52 @@ export default function CreateResume() {
     }));
   };
 
+  const addObjectItem = (field, item) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: [...prev[field], item],
+    }));
+  };
+
+  const updateObjectItem = (field, index, key, value) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [key]: value } : item,
+      ),
+    }));
+  };
+
+  const removeObjectItem = (field, index) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
+  const addStringItem = (field) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: [...prev[field], ""],
+    }));
+  };
+
+  const updateStringItem = (field, index, value) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, itemIndex) =>
+        itemIndex === index ? value : item,
+      ),
+    }));
+  };
+
+  const removeStringItem = (field, index) => {
+    setResumeData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
   if (loadingResume) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -300,11 +399,11 @@ export default function CreateResume() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-3xl font-black text-slate-950">
-              Create Resume
+              Job Application Studio
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              Build polished ATS-friendly resumes with AI power.
+              Tailor a truthful, ATS-friendly resume to a real job description.
             </p>
           </div>
 
@@ -319,7 +418,7 @@ export default function CreateResume() {
               ) : (
                 <Sparkles size={18} />
               )}
-              Generate with AI
+              Analyze & Optimize
             </button>
 
             <button
@@ -459,6 +558,71 @@ export default function CreateResume() {
             </div>
           </div>
 
+          <ObjectSection
+            title="Work Experience"
+            icon={BriefcaseBusiness}
+            items={resumeData.experience}
+            emptyItem={{
+              company: "",
+              role: "",
+              duration: "",
+              description: "",
+            }}
+            fields={[
+              { key: "company", label: "Company" },
+              { key: "role", label: "Role" },
+              { key: "duration", label: "Duration" },
+              {
+                key: "description",
+                label: "Achievements and responsibilities",
+                multiline: true,
+              },
+            ]}
+            onAdd={(item) => addObjectItem("experience", item)}
+            onUpdate={(index, key, value) =>
+              updateObjectItem("experience", index, key, value)
+            }
+            onRemove={(index) => removeObjectItem("experience", index)}
+          />
+
+          <ObjectSection
+            title="Projects"
+            icon={FolderKanban}
+            items={resumeData.projects}
+            emptyItem={{ name: "", stack: "", description: "" }}
+            fields={[
+              { key: "name", label: "Project name" },
+              { key: "stack", label: "Tools / technologies" },
+              {
+                key: "description",
+                label: "What you built and the result",
+                multiline: true,
+              },
+            ]}
+            onAdd={(item) => addObjectItem("projects", item)}
+            onUpdate={(index, key, value) =>
+              updateObjectItem("projects", index, key, value)
+            }
+            onRemove={(index) => removeObjectItem("projects", index)}
+          />
+
+          <ObjectSection
+            title="Education"
+            icon={GraduationCap}
+            items={resumeData.education}
+            emptyItem={{ degree: "", institute: "", year: "" }}
+            fields={[
+              { key: "degree", label: "Degree" },
+              { key: "institute", label: "Institute" },
+              { key: "year", label: "Year" },
+            ]}
+            onAdd={(item) => addObjectItem("education", item)}
+            onUpdate={(index, key, value) =>
+              updateObjectItem("education", index, key, value)
+            }
+            onRemove={(index) => removeObjectItem("education", index)}
+          />
+
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-black text-slate-950">Skills</h2>
@@ -496,8 +660,36 @@ export default function CreateResume() {
             </div>
           </div>
 
+          <StringListSection
+            title="Certifications"
+            items={resumeData.certifications}
+            placeholder="Certification name"
+            onAdd={() => addStringItem("certifications")}
+            onUpdate={(index, value) =>
+              updateStringItem("certifications", index, value)
+            }
+            onRemove={(index) => removeStringItem("certifications", index)}
+          />
+
+          <StringListSection
+            title="Languages"
+            items={resumeData.languages}
+            placeholder="English — Professional"
+            onAdd={() => addStringItem("languages")}
+            onUpdate={(index, value) =>
+              updateStringItem("languages", index, value)
+            }
+            onRemove={(index) => removeStringItem("languages", index)}
+          />
+
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black text-slate-950">AI Assistant</h2>
+            <h2 className="text-2xl font-black text-slate-950">
+              Job Match Assistant
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Paste the real job description. AI only uses facts you provide and
+              lists unsupported requirements as gaps instead of inventing them.
+            </p>
 
             <div className="mt-5 grid gap-4">
               <Input
@@ -515,15 +707,47 @@ export default function CreateResume() {
               />
 
               <TextArea
-                label="Skills"
+                label="Your verified skills"
                 value={aiForm.skills}
                 onChange={(e) => updateAiForm("skills", e.target.value)}
               />
+
+              <TextArea
+                label="Verified achievements (numbers and results help)"
+                value={aiForm.achievements}
+                onChange={(e) => updateAiForm("achievements", e.target.value)}
+              />
+
+              <TextArea
+                label="Target job description"
+                value={aiForm.jobDescription}
+                onChange={(e) =>
+                  updateAiForm("jobDescription", e.target.value)
+                }
+                rows={9}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SelectField
+                  label="Output language"
+                  value={aiForm.language}
+                  options={["English", "Bangla", "Bangla + English"]}
+                  onChange={(e) => updateAiForm("language", e.target.value)}
+                />
+                <SelectField
+                  label="Tone"
+                  value={aiForm.tone}
+                  options={["Professional", "Confident", "Concise", "Fresher"]}
+                  onChange={(e) => updateAiForm("tone", e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div>
+        <div className="space-y-6">
+          {aiResult && <JobMatchReport result={aiResult} />}
+
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-2xl font-black text-slate-950">Live Preview</h2>
 
@@ -575,6 +799,88 @@ export default function CreateResume() {
                     )}
                   </div>
                 </section>
+
+                {resumeData.experience.length > 0 && (
+                  <PreviewSection title="Experience">
+                    <div className="space-y-5">
+                      {resumeData.experience.map((item, index) => (
+                        <div key={`${item.company}-${index}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="font-black">{item.role}</h3>
+                              <p className="font-semibold text-indigo-700">
+                                {item.company}
+                              </p>
+                            </div>
+                            <span className="text-sm text-slate-500">
+                              {item.duration}
+                            </span>
+                          </div>
+                          <p className="mt-2 whitespace-pre-line leading-7 text-slate-700">
+                            {item.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </PreviewSection>
+                )}
+
+                {resumeData.projects.length > 0 && (
+                  <PreviewSection title="Projects">
+                    <div className="space-y-5">
+                      {resumeData.projects.map((item, index) => (
+                        <div key={`${item.name}-${index}`}>
+                          <h3 className="font-black">{item.name}</h3>
+                          <p className="text-sm font-semibold text-indigo-700">
+                            {item.stack}
+                          </p>
+                          <p className="mt-2 whitespace-pre-line leading-7 text-slate-700">
+                            {item.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </PreviewSection>
+                )}
+
+                {resumeData.education.length > 0 && (
+                  <PreviewSection title="Education">
+                    <div className="space-y-3">
+                      {resumeData.education.map((item, index) => (
+                        <div
+                          key={`${item.institute}-${index}`}
+                          className="flex items-start justify-between gap-4"
+                        >
+                          <div>
+                            <h3 className="font-black">{item.degree}</h3>
+                            <p className="text-slate-700">{item.institute}</p>
+                          </div>
+                          <span className="text-sm text-slate-500">
+                            {item.year}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </PreviewSection>
+                )}
+
+                {(resumeData.certifications.length > 0 ||
+                  resumeData.languages.length > 0) && (
+                  <PreviewSection title="Additional Information">
+                    {resumeData.certifications.length > 0 && (
+                      <p className="leading-7 text-slate-700">
+                        <strong>Certifications:</strong>{" "}
+                        {resumeData.certifications.filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    {resumeData.languages.length > 0 && (
+                      <p className="mt-2 leading-7 text-slate-700">
+                        <strong>Languages:</strong>{" "}
+                        {resumeData.languages.filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </PreviewSection>
+                )}
               </div>
             </div>
           </div>
@@ -612,5 +918,254 @@ function TextArea({ label, ...props }) {
         className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-indigo-500"
       />
     </div>
+  );
+}
+
+function SelectField({ label, options, ...props }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-black text-slate-700">
+        {label}
+      </label>
+      <select
+        {...props}
+        className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-indigo-500"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function ObjectSection({
+  title,
+  icon: Icon,
+  items,
+  emptyItem,
+  fields,
+  onAdd,
+  onUpdate,
+  onRemove,
+}) {
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <Icon size={19} />
+          </span>
+          <h2 className="text-2xl font-black text-slate-950">{title}</h2>
+        </div>
+        <button
+          type="button"
+          onClick={() => onAdd({ ...emptyItem })}
+          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-black text-white"
+        >
+          <Plus size={16} /> Add
+        </button>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
+          Add verified information so AI can create specific, truthful content.
+        </p>
+      ) : (
+        <div className="mt-5 space-y-4">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            >
+              <div className="grid gap-4">
+                {fields.map((field) =>
+                  field.multiline ? (
+                    <TextArea
+                      key={field.key}
+                      label={field.label}
+                      value={item[field.key] || ""}
+                      onChange={(event) =>
+                        onUpdate(index, field.key, event.target.value)
+                      }
+                    />
+                  ) : (
+                    <Input
+                      key={field.key}
+                      label={field.label}
+                      value={item[field.key] || ""}
+                      onChange={(event) =>
+                        onUpdate(index, field.key, event.target.value)
+                      }
+                    />
+                  ),
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onRemove(index)}
+                className="mt-4 inline-flex items-center gap-2 text-sm font-black text-red-600"
+              >
+                <Trash2 size={16} /> Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function StringListSection({
+  title,
+  items,
+  placeholder,
+  onAdd,
+  onUpdate,
+  onRemove,
+}) {
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-black text-slate-950">{title}</h2>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-black text-white"
+        >
+          <Plus size={16} /> Add
+        </button>
+      </div>
+      <div className="mt-5 space-y-3">
+        {items.map((item, index) => (
+          <div key={index} className="flex gap-3">
+            <input
+              value={item}
+              onChange={(event) => onUpdate(index, event.target.value)}
+              placeholder={placeholder}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function JobMatchReport({ result }) {
+  const score = Number(result.matchScore || 0);
+  const scoreColor =
+    score >= 75
+      ? "bg-emerald-100 text-emerald-700"
+      : score >= 50
+        ? "bg-amber-100 text-amber-700"
+        : "bg-red-100 text-red-700";
+
+  return (
+    <section className="rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
+            Evidence-based analysis
+          </p>
+          <h2 className="mt-1 text-2xl font-black text-slate-950">
+            Job Match Report
+          </h2>
+        </div>
+        <span className={`rounded-2xl px-4 py-3 text-2xl font-black ${scoreColor}`}>
+          {score}%
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <ReportList
+          title="Matched keywords"
+          icon={ShieldCheck}
+          items={result.matchedKeywords}
+          emptyText="Add a job description for keyword matching."
+        />
+        <ReportList
+          title="Missing evidence"
+          icon={AlertTriangle}
+          items={result.missingKeywords}
+          emptyText="No major unsupported requirement detected."
+        />
+        <ReportList
+          title="Strengths"
+          icon={Check}
+          items={result.strengths}
+          emptyText="Add more verified achievements."
+        />
+        <ReportList
+          title="Improve next"
+          icon={Sparkles}
+          items={result.improvements}
+          emptyText="No immediate improvement returned."
+        />
+      </div>
+
+      {result.truthCheckQuestions?.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <h3 className="font-black text-amber-900">Facts to confirm</h3>
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-amber-900">
+            {result.truthCheckQuestions.map((item) => (
+              <li key={item}>• {item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {result.recruiterMessage && (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <h3 className="font-black text-slate-950">Recruiter message</h3>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+            {result.recruiterMessage}
+          </p>
+        </div>
+      )}
+
+      <p className="mt-4 text-xs font-bold text-slate-500">
+        Source: {result.source} • Remaining credits: {result.remainingCredits}
+      </p>
+    </section>
+  );
+}
+
+function ReportList({ title, icon: Icon, items = [], emptyText }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <h3 className="flex items-center gap-2 font-black text-slate-950">
+        <Icon size={17} className="text-indigo-600" /> {title}
+      </h3>
+      {items.length > 0 ? (
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+          {items.map((item) => (
+            <li key={item}>• {item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-slate-500">{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
+function PreviewSection({ title, children }) {
+  return (
+    <section className="mt-8">
+      <h2 className="border-b border-slate-300 pb-2 text-lg font-black uppercase tracking-wide">
+        {title}
+      </h2>
+      <div className="mt-4">{children}</div>
+    </section>
   );
 }

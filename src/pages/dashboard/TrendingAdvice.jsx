@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
+import api from "../../api/axios";
 import {
+  Activity,
   Copy,
+  ExternalLink,
   FileText,
+  Globe2,
   Loader2,
   RefreshCcw,
   Sparkles,
   Trash2,
   TrendingUp,
+  Video,
 } from "lucide-react";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
 
 const PLATFORM_OPTIONS = [
   "Facebook Reels",
@@ -46,14 +45,6 @@ const initialForm = {
   extraDetails: "",
 };
 
-const getToken = () => localStorage.getItem("resumeforge_token") || "";
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: getToken() ? `Bearer ${getToken()}` : "",
-  },
-});
-
 const getStoredUser = () => {
   try {
     return JSON.parse(localStorage.getItem("resumeforge_user") || "null");
@@ -76,6 +67,7 @@ const updateStoredUserCredits = (credits) => {
           aiCredits: credits,
         })
       );
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
     }
   } catch {
     // ignore localStorage errors
@@ -83,6 +75,7 @@ const updateStoredUserCredits = (credits) => {
 };
 
 const getContent = (document) => document?.output?.content || "";
+const getReport = (document) => document?.output || null;
 
 const formatDate = (date) => {
   if (!date) return "Unknown date";
@@ -94,10 +87,35 @@ const formatDate = (date) => {
   }).format(new Date(date));
 };
 
+const formatDateTime = (date) => {
+  if (!date) return "Time unavailable";
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "Time unavailable";
+
+  return new Intl.DateTimeFormat("en-BD", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Dhaka",
+  }).format(parsedDate);
+};
+
+const STATUS_LABELS = {
+  rising: "Rising",
+  peaking: "Peaking",
+  stable: "Stable",
+  declining: "Declining",
+  insufficient_data: "More data needed",
+};
+
 export default function TrendingAdvice() {
   const [form, setForm] = useState(initialForm);
   const [generatedContent, setGeneratedContent] = useState("");
   const [generatedTitle, setGeneratedTitle] = useState("");
+  const [generatedReport, setGeneratedReport] = useState(null);
   const [history, setHistory] = useState([]);
   const [remainingCredits, setRemainingCredits] = useState(
     getStoredUserCredits()
@@ -110,10 +128,7 @@ export default function TrendingAdvice() {
     try {
       setIsLoadingHistory(true);
 
-      const { data } = await axios.get(
-        `${API_BASE_URL}/trending/history`,
-        getAuthConfig()
-      );
+      const { data } = await api.get("/trending/history");
 
       setHistory(data?.data || []);
       setRemainingCredits(getStoredUserCredits());
@@ -161,27 +176,25 @@ export default function TrendingAdvice() {
       setIsGenerating(true);
       setGeneratedContent("");
       setGeneratedTitle("");
+      setGeneratedReport(null);
 
-      const { data } = await axios.post(
-        `${API_BASE_URL}/trending/generate`,
-        { form },
-        getAuthConfig()
-      );
+      const { data } = await api.post("/trending/generate", { form });
 
       const document = data?.data?.document;
       const content = getContent(document);
       const credits = data?.data?.remainingCredits ?? null;
 
       setGeneratedContent(content);
-      setGeneratedTitle(document?.title || "Trending Advice Report");
+      setGeneratedTitle(document?.title || "Live Trend Radar Report");
+      setGeneratedReport(getReport(document));
       setRemainingCredits(credits);
       updateStoredUserCredits(credits);
 
-      toast.success("Trending advice generated!");
+      toast.success("Live trend report generated!");
       await loadHistory();
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || "Failed to generate trending advice."
+        error?.response?.data?.message || "Failed to generate live trend report."
       );
     } finally {
       setIsGenerating(false);
@@ -203,8 +216,9 @@ export default function TrendingAdvice() {
   };
 
   const handleLoadDocument = (document) => {
-    setGeneratedTitle(document?.title || "Trending Advice Report");
+    setGeneratedTitle(document?.title || "Live Trend Radar Report");
     setGeneratedContent(getContent(document));
+    setGeneratedReport(getReport(document));
     toast.success("Report loaded.");
   };
 
@@ -212,7 +226,7 @@ export default function TrendingAdvice() {
     try {
       setDeletingId(id);
 
-      await axios.delete(`${API_BASE_URL}/trending/history/${id}`, getAuthConfig());
+      await api.delete(`/trending/history/${id}`);
 
       setHistory((prev) => prev.filter((item) => item._id !== id));
       toast.success("Report deleted.");
@@ -227,6 +241,7 @@ export default function TrendingAdvice() {
     setForm(initialForm);
     setGeneratedContent("");
     setGeneratedTitle("");
+    setGeneratedReport(null);
     toast.success("Form reset.");
   };
 
@@ -238,17 +253,17 @@ export default function TrendingAdvice() {
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700">
                 <TrendingUp size={17} />
-                CareerPilot AI · Trending Advice
+                CareerPilot AI · Live Trend Radar
               </div>
 
               <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-                Trending advice for creators
+                আজকের ট্রেন্ড দেখে কনটেন্ট তৈরি করুন
               </h1>
 
               <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-                Generate niche-based hooks, scripts, captions, hashtags,
-                posting advice, and monetization angles for Facebook Reels,
-                TikTok, YouTube Shorts, and Instagram Reels.
+                Google Trends, YouTube এবং সাম্প্রতিক ওয়েব/সংবাদ উৎস যাচাই করে
+                আপনার niche-এর জন্য hooks, scripts, posting plan ও monetization
+                angle তৈরি করুন। প্রতিটি রিপোর্টে উৎস ও যাচাইয়ের সময় থাকবে।
               </p>
             </div>
 
@@ -258,10 +273,10 @@ export default function TrendingAdvice() {
               </p>
 
               <div className="mt-4 space-y-3 text-sm font-semibold text-slate-700">
-                <p>Content creator workflow</p>
-                <p>Bangladesh-focused audience fit</p>
-                <p>Hook + script generation</p>
-                <p>Income-focused posting plan</p>
+                <p>Live Google search signals</p>
+                <p>Recent YouTube video metrics</p>
+                <p>Current web and news evidence</p>
+                <p>Source-backed income plan</p>
               </div>
 
               <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
@@ -286,7 +301,7 @@ export default function TrendingAdvice() {
                   Input
                 </p>
                 <h2 className="mt-1 text-xl font-black text-slate-950">
-                  Generate content guidance
+                  Scan live trends
                 </h2>
               </div>
 
@@ -391,12 +406,12 @@ export default function TrendingAdvice() {
                 {isGenerating ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    Generating...
+                    Checking live sources...
                   </>
                 ) : (
                   <>
                     <Sparkles size={18} />
-                    Generate Content Advice
+                    Generate Live Trend Report · 3 credits
                   </>
                 )}
               </button>
@@ -411,7 +426,7 @@ export default function TrendingAdvice() {
                     Output
                   </p>
                   <h2 className="mt-1 text-xl font-black text-slate-950">
-                    {generatedTitle || "Generated advice will appear here"}
+                    {generatedTitle || "Your live trend report will appear here"}
                   </h2>
                 </div>
 
@@ -426,6 +441,10 @@ export default function TrendingAdvice() {
                 </button>
               </div>
 
+              {generatedReport?.dataMode === "live_grounded" && (
+                <LiveEvidenceSummary report={generatedReport} />
+              )}
+
               <div className="min-h-[420px] rounded-3xl border border-slate-200 bg-slate-50 p-5">
                 {generatedContent ? (
                   <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-7 text-slate-800">
@@ -437,11 +456,15 @@ export default function TrendingAdvice() {
                       <FileText className="text-slate-400" size={36} />
                     </div>
                     <p className="text-sm font-semibold text-slate-500">
-                      AI-generated advice will be shown here.
+                      Live sources will be checked before the report is generated.
                     </p>
                   </div>
                 )}
               </div>
+
+              {generatedReport?.sources?.length > 0 && (
+                <SourceList sources={generatedReport.sources} />
+              )}
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -451,7 +474,7 @@ export default function TrendingAdvice() {
                     Saved
                   </p>
                   <h2 className="mt-1 text-xl font-black text-slate-950">
-                    Recent Trending Advice
+                    Recent Trend Reports
                   </h2>
                 </div>
 
@@ -471,7 +494,7 @@ export default function TrendingAdvice() {
                 </div>
               ) : history.length === 0 ? (
                 <div className="rounded-3xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-600">
-                  No trending advice generated yet.
+                  No live trend report generated yet.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -537,6 +560,137 @@ export default function TrendingAdvice() {
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  );
+}
+
+function LiveEvidenceSummary({ report }) {
+  const coverage = report.coverage || {};
+  const providers = [
+    {
+      key: "googleTrends",
+      label: "Google Trends",
+      icon: Activity,
+      data: coverage.googleTrends,
+    },
+    {
+      key: "youtube",
+      label: "YouTube",
+      icon: Video,
+      data: coverage.youtube,
+    },
+    {
+      key: "web",
+      label: "Live Web",
+      icon: Globe2,
+      data: coverage.web,
+    },
+  ];
+
+  return (
+    <div className="mb-5 space-y-4 rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-white">
+            <Activity size={14} />
+            Live data checked
+          </div>
+          <p className="mt-3 text-sm font-semibold leading-6 text-slate-700">
+            {report.summary}
+          </p>
+        </div>
+
+        <div className="shrink-0 rounded-2xl border border-emerald-200 bg-white px-4 py-3">
+          <p className="text-xs font-bold text-slate-500">Trend verdict</p>
+          <p className="mt-1 font-black text-emerald-700">
+            {STATUS_LABELS[report.trendStatus] || report.trendStatus || "Unknown"}
+            {Number.isFinite(report.confidence) ? ` · ${report.confidence}% confidence` : ""}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-slate-500">
+            Checked {formatDateTime(report.asOf)}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {providers.map(({ key, label, icon: Icon, data }) => (
+          <div key={key} className="rounded-2xl border border-emerald-100 bg-white p-3">
+            <div className="flex items-center gap-2 text-sm font-black text-slate-800">
+              <Icon size={16} className={data?.available ? "text-emerald-600" : "text-slate-400"} />
+              {label}
+            </div>
+            <p className={`mt-1 text-xs font-bold ${data?.available ? "text-emerald-700" : "text-amber-700"}`}>
+              {data?.available
+                ? `${data.signalCount || 0} signal${data.signalCount === 1 ? "" : "s"}`
+                : "Unavailable"}
+            </p>
+            {!data?.available && data?.note && (
+              <p className="mt-1 text-xs leading-5 text-slate-500">{data.note}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {report.limitations?.length > 0 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-amber-800">
+            Evidence limits
+          </p>
+          <ul className="mt-2 space-y-1 text-xs font-semibold leading-5 text-amber-900">
+            {report.limitations.map((item) => (
+              <li key={item}>• {item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SourceList({ sources }) {
+  return (
+    <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-indigo-600">
+            Verified sources
+          </p>
+          <h3 className="mt-1 font-black text-slate-950">
+            Live evidence ({sources.length})
+          </h3>
+        </div>
+        <Globe2 size={20} className="text-indigo-500" />
+      </div>
+
+      <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1">
+        {sources.map((source) => (
+          <a
+            key={source.url}
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+            className="block rounded-2xl border border-slate-200 p-3 transition hover:border-indigo-200 hover:bg-indigo-50/50"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="line-clamp-2 text-sm font-black leading-5 text-slate-900">
+                  {source.title}
+                </p>
+                <p className="mt-1 text-xs font-bold text-indigo-600">
+                  {source.publisher || source.platform || "Web source"}
+                </p>
+              </div>
+              <ExternalLink size={15} className="mt-0.5 shrink-0 text-slate-400" />
+            </div>
+
+            <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
+              {source.metric || "Live source checked"}
+              {source.publishedAt ? ` · Published ${formatDateTime(source.publishedAt)}` : ""}
+              {source.observedAt ? ` · Checked ${formatDateTime(source.observedAt)}` : ""}
+            </p>
+          </a>
+        ))}
       </div>
     </div>
   );

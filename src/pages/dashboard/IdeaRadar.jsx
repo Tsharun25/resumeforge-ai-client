@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
+import api from "../../api/axios";
 import {
   BookOpen,
   CheckCircle2,
@@ -16,18 +16,13 @@ import {
   Wallet,
 } from "lucide-react";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
-
 const TOOL_OPTIONS = [
   {
     id: "niche_ideas",
     title: "Niche Idea Generator",
     shortTitle: "Niche Ideas",
     description:
-      "Find profitable career, freelance, and SaaS niche ideas based on your skills.",
+      "Explore career, freelance, and SaaS directions based on your verified skills.",
     badge: "2 credits",
     icon: Lightbulb,
   },
@@ -92,14 +87,6 @@ const initialForm = {
   extraDetails: "",
 };
 
-const getToken = () => localStorage.getItem("resumeforge_token") || "";
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: getToken() ? `Bearer ${getToken()}` : "",
-  },
-});
-
 const getStoredUser = () => {
   try {
     return JSON.parse(localStorage.getItem("resumeforge_user") || "null");
@@ -118,6 +105,7 @@ const updateStoredUserCredits = (credits) => {
         "resumeforge_user",
         JSON.stringify({ ...user, aiCredits: credits })
       );
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
     }
   } catch {
     // ignore
@@ -158,10 +146,7 @@ export default function IdeaRadar() {
     try {
       setIsLoadingHistory(true);
 
-      const { data } = await axios.get(
-        `${API_BASE_URL}/ideas/history`,
-        getAuthConfig()
-      );
+      const { data } = await api.get("/ideas/history");
 
       setHistory(data?.data || []);
       setRemainingCredits(getStoredUserCredits());
@@ -209,14 +194,10 @@ export default function IdeaRadar() {
       setGeneratedContent("");
       setGeneratedTitle("");
 
-      const { data } = await axios.post(
-        `${API_BASE_URL}/ideas/generate`,
-        {
-          toolType: selectedTool,
-          form,
-        },
-        getAuthConfig()
-      );
+      const { data } = await api.post("/ideas/generate", {
+        toolType: selectedTool,
+        form,
+      });
 
       const document = data?.data?.document;
       const content = getDocumentContent(document);
@@ -260,7 +241,7 @@ export default function IdeaRadar() {
     try {
       setDeletingId(id);
 
-      await axios.delete(`${API_BASE_URL}/ideas/history/${id}`, getAuthConfig());
+      await api.delete(`/ideas/history/${id}`);
 
       setHistory((prev) => prev.filter((item) => item._id !== id));
       toast.success("Report deleted.");
@@ -286,17 +267,16 @@ export default function IdeaRadar() {
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
                 <Compass size={17} />
-                CareerPilot AI · Idea Radar
+                CareerPilot AI · Opportunity Planner
               </div>
 
               <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-                Bangladesh-focused income idea engine
+                Personalized career and income planning
               </h1>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-                Generate niche ideas, career paths, skill roadmaps, and income
-                plans based on your skills, interests, goal, budget, and market
-                focus.
+                Compare career directions, skill roadmaps, and income plans from
+                your skills, interests, constraints, market focus, and goals.
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -590,7 +570,7 @@ export default function IdeaRadar() {
                     Saved
                   </p>
                   <h2 className="mt-1 text-xl font-black text-slate-950">
-                    Recent Idea Radar Reports
+                    Recent Opportunity Reports
                   </h2>
                 </div>
 
@@ -611,7 +591,7 @@ export default function IdeaRadar() {
                 </div>
               ) : history.length === 0 ? (
                 <div className="rounded-3xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-600">
-                  No Idea Radar reports yet.
+                  No opportunity reports yet.
                 </div>
               ) : (
                 <div className="space-y-3">

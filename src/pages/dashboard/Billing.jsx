@@ -19,9 +19,9 @@ const plans = [
     description: "Try CareerPilot AI with limited access.",
     features: [
       "10 free AI credits",
-      "1 resume",
-      "1 cover letter",
-      "Basic PDF export",
+      "1 saved resume",
+      "1 cover letter per month",
+      "Classic ATS template + PDF",
       "Bangla and English output",
     ],
   },
@@ -31,10 +31,11 @@ const plans = [
     price: 199,
     description: "Best for students and freshers.",
     features: [
-      "5 resumes/month",
+      "Up to 5 saved resumes",
       "5 cover letters/month",
-      "20 AI generations",
-      "PDF export",
+      "20 AI credits",
+      "Job Match report + all templates",
+      "Recruiter message + PDF export",
       "Bangla + English output",
     ],
   },
@@ -44,52 +45,39 @@ const plans = [
     price: 499,
     description: "Best for job seekers and freelancers.",
     features: [
-      "More resume generations",
-      "Job-specific optimization",
-      "LinkedIn bio generator",
+      "80 AI credits",
+      "Up to 30 saved resumes",
+      "30 cover letters/month",
+      "Full job-specific optimization",
       "Upwork/Fiverr profile tools",
-      "Idea Radar access",
-      "PDF report export",
+      "Opportunity Planner + Live Trend Radar",
+      "All templates + PDF export",
     ],
     popular: true,
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    price: 999,
-    description: "For coaching centers and consultants.",
-    features: [
-      "Multiple client profiles",
-      "Higher usage limits",
-      "Branded reports",
-      "Career consultancy workflow",
-      "Priority support",
-    ],
   },
 ];
 
 const merchantNumbers = [
-  ["bKash", import.meta.env.VITE_BKASH_NUMBER || "+8801710071135"],
-  ["Nagad", import.meta.env.VITE_NAGAD_NUMBER || "+8801710071135"],
-  ["Rocket", import.meta.env.VITE_ROCKET_NUMBER || "+88017100711358"],
-  ["Tap", import.meta.env.VITE_TAP_NUMBER || "+8801710071135"],
-  ["Upay", import.meta.env.VITE_UPAY_NUMBER || "+8801710071135"],
-];
+  ["bKash", import.meta.env.VITE_BKASH_NUMBER],
+  ["Nagad", import.meta.env.VITE_NAGAD_NUMBER],
+  ["Rocket", import.meta.env.VITE_ROCKET_NUMBER],
+  ["Tap", import.meta.env.VITE_TAP_NUMBER],
+  ["Upay", import.meta.env.VITE_UPAY_NUMBER],
+].filter(([, value]) => Boolean(value?.trim()));
 
 const bankDetails = [
-  ["Bank Name", import.meta.env.VITE_BANK_NAME || "Add your bank name"],
-  ["Account Name", import.meta.env.VITE_BANK_ACCOUNT_NAME || "Add account name"],
-  [
-    "Account Number",
-    import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "Add account number",
-  ],
-  ["Branch", import.meta.env.VITE_BANK_BRANCH || "Add branch name"],
-  ["Routing Number", import.meta.env.VITE_BANK_ROUTING_NUMBER || "Optional"],
-];
+  ["Bank Name", import.meta.env.VITE_BANK_NAME],
+  ["Account Name", import.meta.env.VITE_BANK_ACCOUNT_NAME],
+  ["Account Number", import.meta.env.VITE_BANK_ACCOUNT_NUMBER],
+  ["Branch", import.meta.env.VITE_BANK_BRANCH],
+  ["Routing Number", import.meta.env.VITE_BANK_ROUTING_NUMBER],
+].filter(([, value]) => Boolean(value?.trim()));
+
+const hasBankTransfer = Boolean(import.meta.env.VITE_BANK_ACCOUNT_NUMBER?.trim());
 
 const paymentMethods = [
   ...merchantNumbers.map(([label]) => label),
-  "Bank Transfer",
+  ...(hasBankTransfer ? ["Bank Transfer"] : []),
 ];
 
 export default function Billing() {
@@ -101,7 +89,7 @@ export default function Billing() {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
   const [formData, setFormData] = useState({
-    paymentMethod: "bKash",
+    paymentMethod: paymentMethods[0] || "",
     senderNumber: "",
     transactionId: "",
     note: "",
@@ -117,6 +105,7 @@ export default function Billing() {
 
       setCurrentUser(data.user);
       localStorage.setItem("resumeforge_user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load user plan");
     } finally {
@@ -164,13 +153,13 @@ export default function Billing() {
       return;
     }
 
-    if (currentUser?.plan === selectedPlan) {
-      toast.error("You are already on this plan");
+    if (!formData.senderNumber.trim()) {
+      toast.error("Sender number or account is required");
       return;
     }
 
-    if (!formData.senderNumber.trim()) {
-      toast.error("Sender number or account is required");
+    if (!formData.paymentMethod) {
+      toast.error("Payment is not configured yet. Please contact support.");
       return;
     }
 
@@ -190,7 +179,7 @@ export default function Billing() {
       toast.success(data.message || "Payment request submitted");
 
       setFormData({
-        paymentMethod: "bKash",
+        paymentMethod: paymentMethods[0] || "",
         senderNumber: "",
         transactionId: "",
         note: "",
@@ -226,7 +215,7 @@ export default function Billing() {
           transfer and submit transaction details for admin approval.
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatusPill
             label="Current Plan"
             value={formatPlanName(currentUser?.plan || "free")}
@@ -242,10 +231,15 @@ export default function Billing() {
             value={hasPendingRequest ? "Pending Review" : "Ready"}
             loading={isLoadingRequests}
           />
+          <StatusPill
+            label="Plan Valid Until"
+            value={formatExpiry(currentUser?.planExpiresAt)}
+            loading={isLoadingUser}
+          />
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-4">
+      <div className="grid gap-5 xl:grid-cols-3">
         {plans.map((plan) => {
           const isCurrentPlan = currentUser?.plan === plan.id;
           const isSelected = selectedPlan === plan.id;
@@ -262,17 +256,19 @@ export default function Billing() {
                   : "border-slate-200"
               }`}
             >
-              {plan.popular && (
-                <span className="absolute right-5 top-5 rounded-full bg-indigo-600 px-3 py-1 text-xs font-black text-white">
-                  Popular
-                </span>
-              )}
+              <div className="absolute right-5 top-5 flex flex-wrap justify-end gap-2">
+                {plan.popular && (
+                  <span className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-black text-white">
+                    Popular
+                  </span>
+                )}
 
-              {isCurrentPlan && (
-                <span className="absolute right-5 top-5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
-                  Current
-                </span>
-              )}
+                {isCurrentPlan && (
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+                    Current
+                  </span>
+                )}
+              </div>
 
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
@@ -321,6 +317,30 @@ export default function Billing() {
         })}
       </div>
 
+      <section className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
+            Credit guide
+          </p>
+          <h2 className="mt-2 text-xl font-black text-slate-950">
+            Know the cost before you generate
+          </h2>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <CreditCost label="Job application AI" value="1 credit" />
+          <CreditCost label="Cover letter" value="1 credit" />
+          <CreditCost label="Freelancer tool" value="1–2 credits" />
+          <CreditCost label="Opportunity plan" value="2 credits" />
+          <CreditCost label="Live Trend Radar" value="3 credits" />
+        </div>
+
+        <p className="mt-4 text-xs font-semibold leading-6 text-slate-500">
+          A failed AI request is refunded automatically. Saved resumes and
+          downloaded documents do not consume additional AI credits.
+        </p>
+      </section>
+
       <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
@@ -338,9 +358,15 @@ export default function Billing() {
                   {selectedPlanData?.name} - BDT {selectedPlanData?.price}
                 </span>
               </p>
+              {currentUser?.plan === selectedPlan && (
+                <p className="mt-1 text-xs font-bold text-emerald-700">
+                  Renewal adds another month after your current expiry date.
+                </p>
+              )}
             </div>
           </div>
 
+          {merchantNumbers.length > 0 && (
           <div className="mt-6 rounded-3xl bg-slate-50 p-5">
             <h3 className="font-black text-slate-950">
               Send payment to merchant number
@@ -357,7 +383,9 @@ export default function Billing() {
               number for this account.
             </p>
           </div>
+          )}
 
+          {hasBankTransfer && (
           <div className="mt-4 rounded-3xl bg-slate-50 p-5">
             <h3 className="font-black text-slate-950">
               Bank transfer details
@@ -373,6 +401,16 @@ export default function Billing() {
               Use the account details above for bank transfer verification.
             </p>
           </div>
+          )}
+
+          {paymentMethods.length === 0 && (
+            <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-bold leading-6 text-amber-800">
+                Payment details are not configured yet. Please contact support
+                before sending any money.
+              </p>
+            </div>
+          )}
 
           {hasPendingRequest && (
             <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-4">
@@ -434,8 +472,8 @@ export default function Billing() {
               disabled={
                 isSubmitting ||
                 selectedPlan === "free" ||
-                hasPendingRequest ||
-                currentUser?.plan === selectedPlan
+                hasPendingRequest
+                || paymentMethods.length === 0
               }
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-indigo-100 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
@@ -447,7 +485,9 @@ export default function Billing() {
               ) : (
                 <>
                   <Send size={18} />
-                  Submit Payment Request
+                  {currentUser?.plan === selectedPlan
+                    ? "Submit Renewal Request"
+                    : "Submit Payment Request"}
                 </>
               )}
             </button>
@@ -583,4 +623,26 @@ function formatPlanName(plan) {
   };
 
   return map[plan] || "Free";
+}
+
+function CreditCost({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-bold text-slate-500">{label}</p>
+      <p className="mt-1 font-black text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function formatExpiry(date) {
+  if (!date) return "No expiry";
+
+  const value = new Date(date);
+  if (Number.isNaN(value.getTime())) return "Unavailable";
+
+  return value.toLocaleDateString("en-BD", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }

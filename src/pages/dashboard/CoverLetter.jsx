@@ -5,16 +5,19 @@ import api from "../../api/axios";
 
 export default function CoverLetter() {
   const [formData, setFormData] = useState({
-    applicantName: "Harun Ahmed",
-    jobTitle: "MERN Stack Developer",
-    companyName: "Tech Company",
-    skills: "React, Node.js, Express, MongoDB, Tailwind CSS",
+    applicantName: "",
+    jobTitle: "",
+    companyName: "",
+    skills: "",
+    achievements: "",
+    experienceSummary: "",
     jobDescription: "",
     language: "English",
     tone: "Professional",
   });
 
   const [coverLetter, setCoverLetter] = useState("");
+  const [generationMeta, setGenerationMeta] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleChange = (field, value) => {
@@ -57,7 +60,26 @@ export default function CoverLetter() {
       const { data } = await api.post("/ai/generate-cover-letter", formData);
 
       setCoverLetter(data.data.coverLetter);
-      toast.success("Cover letter generated!");
+      setGenerationMeta({
+        matchedKeywords: data.data.matchedKeywords || [],
+        missingInformation: data.data.missingInformation || [],
+        source: data.source,
+        remainingCredits: data.remainingCredits,
+      });
+
+      const storedUser = JSON.parse(
+        localStorage.getItem("resumeforge_user") || "null",
+      );
+
+      if (storedUser && Number.isFinite(data.remainingCredits)) {
+        localStorage.setItem(
+          "resumeforge_user",
+          JSON.stringify({ ...storedUser, aiCredits: data.remainingCredits }),
+        );
+        window.dispatchEvent(new Event("careerpilot-user-updated"));
+      }
+
+      toast.success("Job-specific cover letter generated!");
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to generate cover letter"
@@ -114,6 +136,20 @@ export default function CoverLetter() {
               label="Skills"
               value={formData.skills}
               onChange={(value) => handleChange("skills", value)}
+            />
+
+            <TextAreaInput
+              label="Verified achievements"
+              value={formData.achievements}
+              placeholder="Example: Reduced processing time by 25%; completed 8 client projects"
+              onChange={(value) => handleChange("achievements", value)}
+            />
+
+            <TextAreaInput
+              label="Relevant experience summary"
+              value={formData.experienceSummary}
+              placeholder="Describe only experience you can verify."
+              onChange={(value) => handleChange("experienceSummary", value)}
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -201,6 +237,25 @@ export default function CoverLetter() {
             rows="22"
             className="mt-6 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-7 text-slate-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
           />
+
+          {generationMeta && (
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <MetaList
+                title="Matched job requirements"
+                items={generationMeta.matchedKeywords}
+                emptyText="No confirmed match was found."
+              />
+              <MetaList
+                title="Information to add"
+                items={generationMeta.missingInformation}
+                emptyText="No important information gap was returned."
+              />
+              <p className="text-xs font-bold text-slate-500 sm:col-span-2">
+                Source: {generationMeta.source} • Remaining credits:{" "}
+                {generationMeta.remainingCredits}
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>
@@ -241,6 +296,40 @@ function Select({ label, value, options, onChange }) {
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+function TextAreaInput({ label, value, placeholder, onChange }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-bold text-slate-700">
+        {label}
+      </label>
+      <textarea
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        rows={4}
+        className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+      />
+    </div>
+  );
+}
+
+function MetaList({ title, items, emptyText }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <h3 className="font-black text-slate-950">{title}</h3>
+      {items.length > 0 ? (
+        <ul className="mt-2 space-y-1 text-sm leading-6 text-slate-700">
+          {items.map((item) => (
+            <li key={item}>• {item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">{emptyText}</p>
+      )}
     </div>
   );
 }

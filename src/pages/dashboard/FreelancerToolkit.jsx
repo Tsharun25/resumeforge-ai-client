@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
+import api from "../../api/axios";
 import {
   Briefcase,
   Clipboard,
@@ -18,11 +18,6 @@ import {
   ArrowRight,
   Zap,
 } from "lucide-react";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
 
 const TOOL_OPTIONS = [
   {
@@ -108,20 +103,6 @@ const initialForm = {
   extraDetails: "",
 };
 
-const getToken = () => {
-  return localStorage.getItem("resumeforge_token") || "";
-};
-
-const getAuthConfig = () => {
-  const token = getToken();
-
-  return {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  };
-};
-
 const getStoredUser = () => {
   try {
     return JSON.parse(localStorage.getItem("resumeforge_user") || "null");
@@ -147,6 +128,7 @@ const updateStoredUserCredits = (credits) => {
           aiCredits: credits,
         })
       );
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
     }
   } catch {
     // localStorage update failed silently
@@ -192,10 +174,7 @@ export default function FreelancerToolkit() {
     try {
       setIsLoadingHistory(true);
 
-      const { data } = await axios.get(
-        `${API_BASE_URL}/freelancer/history`,
-        getAuthConfig()
-      );
+      const { data } = await api.get("/freelancer/history");
 
       setHistory(data?.data || []);
 
@@ -254,14 +233,10 @@ export default function FreelancerToolkit() {
       setGeneratedContent("");
       setGeneratedTitle("");
 
-      const { data } = await axios.post(
-        `${API_BASE_URL}/freelancer/generate`,
-        {
-          toolType: selectedTool,
-          form,
-        },
-        getAuthConfig()
-      );
+      const { data } = await api.post("/freelancer/generate", {
+        toolType: selectedTool,
+        form,
+      });
 
       const document = data?.data?.document;
       const content = getDocumentContent(document);
@@ -309,10 +284,7 @@ export default function FreelancerToolkit() {
     try {
       setDeletingId(id);
 
-      await axios.delete(
-        `${API_BASE_URL}/freelancer/history/${id}`,
-        getAuthConfig()
-      );
+      await api.delete(`/freelancer/history/${id}`);
 
       setHistory((prev) => prev.filter((item) => item._id !== id));
       toast.success("Deleted successfully.");
@@ -758,7 +730,7 @@ export default function FreelancerToolkit() {
                             <p className="mt-1 text-xs font-semibold text-slate-500">
                               {formatDate(item.createdAt)} ·{" "}
                               {item?.input?.creditsUsed || 1} credit used ·{" "}
-                              {item.source || "mock"}
+                              {item.source || "Unknown source"}
                             </p>
 
                             <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">

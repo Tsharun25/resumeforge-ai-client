@@ -11,11 +11,12 @@ export default function Topbar() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const navItems = getNavItems();
+  const navItems = getNavItems(user);
 
   const handleLogout = () => {
     localStorage.removeItem("resumeforge_token");
     localStorage.removeItem("resumeforge_user");
+    window.dispatchEvent(new Event("careerpilot-user-updated"));
 
     toast.success("Logged out successfully!");
     navigate("/login");

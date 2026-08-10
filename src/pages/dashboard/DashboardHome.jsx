@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  ArrowRight,
+  BriefcaseBusiness,
   CalendarDays,
   Download,
   FileText,
   Loader2,
   Plus,
   Sparkles,
+  Target,
+  TrendingUp,
   Wand2,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -35,6 +39,7 @@ export default function DashboardHome() {
 
       if (data.user) {
         localStorage.setItem("resumeforge_user", JSON.stringify(data.user));
+        window.dispatchEvent(new Event("careerpilot-user-updated"));
       }
 
       setDashboardData({
@@ -88,6 +93,41 @@ export default function DashboardHome() {
 
         <MetricCard title="PDF Export" value="Ready" icon={Download} />
       </div>
+
+      <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
+            Choose your goal
+          </p>
+          <h2 className="mt-2 text-2xl font-black text-slate-950">
+            What do you want to achieve today?
+          </h2>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <GoalCard
+            icon={Target}
+            title="Apply for a job"
+            text="Match your verified experience to a real job and build the complete application pack."
+            link="/dashboard/create-resume"
+            action="Open Job Studio"
+          />
+          <GoalCard
+            icon={BriefcaseBusiness}
+            title="Win freelance clients"
+            text="Create focused profiles, gigs, and proposals built around a specific service."
+            link="/dashboard/freelancer-toolkit"
+            action="Open Freelancer Toolkit"
+          />
+          <GoalCard
+            icon={TrendingUp}
+            title="Grow creator income"
+            text="Use current evidence to choose timely topics, scripts, and monetization angles."
+            link="/dashboard/trending-advice"
+            action="Open Trend Radar"
+          />
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -392,4 +432,23 @@ function getRemainingDays(dateValue) {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   return Math.max(diffDays, 0);
+}
+
+function GoalCard({ icon: Icon, title, text, link, action }) {
+  return (
+    <Link
+      to={link}
+      className="group rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-1 hover:border-indigo-200 hover:bg-indigo-50"
+    >
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+        <Icon size={22} />
+      </div>
+      <h3 className="mt-4 text-lg font-black text-slate-950">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
+      <span className="mt-4 inline-flex items-center gap-2 text-sm font-black text-indigo-600">
+        {action}
+        <ArrowRight size={16} className="transition group-hover:translate-x-1" />
+      </span>
+    </Link>
+  );
 }

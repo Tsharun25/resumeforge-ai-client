@@ -31,6 +31,7 @@ export default function Login() {
 
       localStorage.setItem("resumeforge_token", data.token);
       localStorage.setItem("resumeforge_user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("careerpilot-user-updated"));
 
       toast.success("Logged in successfully!");
       navigate("/dashboard");
